@@ -1,0 +1,128 @@
+BRAINFUCK GRAMMAR
+
+1. S -> +S
+2. S -> -S
+3. S -> >S
+4. S -> <S
+5. S -> .S
+6. S -> ,S
+7. S -> [ S ]
+8. S -> ε
+
+According to Chomsky's grammar hierarchy, brainfuck is a context-free language because of the inclusion of [ and ], which have to occur in pairs. Without [ or ], brainfuck would simply be a regular language of the form (+|-|>|<|.|,)*. The only possible syntax errors are unbalanced [ or ] characters.
+
+Brainfuck should be easily parsable in one pass with no prediction required with a top-down parser. A shift-reduce parser is also an option, however, a shift every time a character other than [ is pushed makes this a less attractive option.
+
+BRAINFUCK SEMANTICS
+
++
+	Add one to the current cell.
+-
+	Subtract one from the current cell.
+>
+	Increase the cell address pointer by one.
+<
+	Decrease the cell address pointer by one.
+.
+	Output the character as given by the current cell address.
+,
+	Take a character from the input stream and store it in the current cell address.
+[
+	If the value of the current cell address is not zero, enter the loop. Otherwise, go to its matching ].
+	(For each [, there must be a matching ] located somewhere after it)
+]
+	Jump back to this ]'s matching [ if the value of the current cell address is non zero. Otherwise, continue.
+	(For each ], there must be a matching [ located somewhere before it)
+
+TOKENs
+
++ TOKEN
+
+tokentype = MATH
+operands = NULL
+link = next token
+whichval = -1
+
+- TOKEN
+
+tokentype = MATH
+operands = NULL
+link = next token
+whichval = 1
+
+> TOKEN
+
+tokentype = SHIFT
+operands = NULL
+link = next token
+whichval = 1
+
+< TOKEN
+
+tokentype = SHIFT
+operands = NULL
+link = next token
+whichval = -1
+
+. TOKEN
+
+tokentype = IO
+operands = NULL
+link = next token
+whichval = 1
+
+, TOKEN
+
+tokentype = IO
+operands = NULL
+link = next token
+whichval = -1
+
+[ TOKEN
+
+tokentype = DELIM
+operands = next token
+link = token after matching ]
+whichval = -1;
+
+] TOKEN
+
+tokentype = DELIM
+operands = NULL
+link = matching [ token
+whichval = 1
+
+
+Have a register dedicated to the pointer of the tape (r2?)
+
+MATH TOKENS
+
+Converted to (ADD IMMEDIATE) $tok->delt, (ptrAddress)
+
+SHIFT TOKENS
+
+Converted to (ADD IMMEDIATE) $tok->delt, ptrAddress
+
+IO TOKENS
+
+Converted to traps for get data and output data
+
+.
+mov (ptr), AL
+out DX, AL (Probably AL, DX for GAS)
+
+,
+in AL, DX (probably reversed)
+mov AL, (ptr)
+
+[ TOKEN
+
+Converted to (LABEL x)	jz LABEL x + 1
+
+] TOKEN
+
+Converted to jnz LABEL x 
+						 (LABEL x+1)
+
+
+probably need to movzx (move zero extend)
